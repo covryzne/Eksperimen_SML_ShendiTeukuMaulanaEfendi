@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, median_absolute_error
 from xgboost import XGBRegressor
 import mlflow
 import mlflow.sklearn
@@ -16,6 +16,9 @@ import os
 def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / (y_true + 1e-10))) * 100
 
+def max_absolute_error(y_true, y_pred):
+    return np.max(np.abs(y_true - y_pred))
+
 def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, feature_names, params=None):
     with mlflow.start_run(run_name=model_name):
         model.fit(X_train, y_train)
@@ -26,6 +29,8 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
         mae = mean_absolute_error(y_test, y_pred)
         mape = mean_absolute_percentage_error(y_test, y_pred)
         explained_var = explained_variance_score(y_test, y_pred)
+        medae = median_absolute_error(y_test, y_pred)
+        maxae = max_absolute_error(y_test, y_pred)
         
         mlflow.log_param("model_type", model_name)
         if params:
@@ -37,9 +42,11 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
         mlflow.log_metric("mae", mae)
         mlflow.log_metric("mape", mape)
         mlflow.log_metric("explained_variance", explained_var)
+        mlflow.log_metric("median_absolute_error", medae)
+        mlflow.log_metric("max_absolute_error", maxae)
         
         # Prepare input example for model signature
-        input_example = X_test[:5]  # Use 5 samples from test set
+        input_example = X_train[:5]
         
         if model_name.startswith("XGBoost"):
             mlflow.xgboost.log_model(model, model_name, input_example=input_example)
@@ -72,7 +79,7 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
             mlflow.log_artifact(feat_imp_path)
             plt.close()
         
-        print(f"{model_name} - R²: {r2:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, Explained Variance: {explained_var:.4f}")
+        print(f"{model_name} - R²: {r2:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, Explained Variance: {explained_var:.4f}, MedAE: {medae:.4f}, MaxAE: {maxae:.4f}")
 
 def main():
     # Setup DagsHub MLflow tracking
@@ -105,7 +112,7 @@ def main():
     train_and_log_model(lr_model, "Linear Regression", X_train, X_test, y_train, y_test, feature_names)
     
     rf_param_grid = {
-        'n_estimators': [50, 150, 200],
+        'n_estimators': [50, 100, 200],
         'max_depth': [5, 10, None]
     }
     rf_model = RandomForestRegressor(random_state=42)
@@ -114,7 +121,7 @@ def main():
     train_and_log_model(rf_grid.best_estimator_, "Random Forest Tuned", X_train, X_test, y_train, y_test, feature_names, rf_grid.best_params_)
     
     xgb_param_grid = {
-        'n_estimators': [50, 150, 200],
+        'n_estimators': [50, 100, 200],
         'learning_rate': [0.01, 0.1, 0.3]
     }
     xgb_model = XGBRegressor(random_state=42)
