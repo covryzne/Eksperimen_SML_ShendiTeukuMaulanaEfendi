@@ -26,9 +26,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add preprocessing/student_habits_preprocessing.csv
           git commit -m "Add preprocessed dataset via GitHub Actions" || echo "No changes to commit"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push https://x:${{ secrets.GH_TOKEN }}@github.com/covryzne/Eksperimen_SML_ShendiTeukuMaulanaEfendi.git
       - name: Upload Preprocessed Dataset
         uses: actions/upload-artifact@v4
         with:
