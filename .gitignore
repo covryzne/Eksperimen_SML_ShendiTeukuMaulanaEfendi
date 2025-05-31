@@ -1,0 +1,8 @@
+# Abaikan semua file dan folder
+*
+
+# Tapi jangan abaikan file/folder ini:
+!.gitignore
+!Membangun_model/
+!mlartifacts/
+!mlruns/
