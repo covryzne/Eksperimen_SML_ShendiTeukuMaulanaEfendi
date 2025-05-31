@@ -1,0 +1,92 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from xgboost import XGBRegressor
+import mlflow
+import mlflow.sklearn
+import mlflow.xgboost
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import explained_variance_score
+import os
+
+def mean_absolute_percentage_error(y_true, y_pred):
+    return np.mean(np.abs((y_true - y_pred) / (y_true + 1e-10))) * 100
+
+def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, params=None):
+    with mlflow.start_run(run_name=model_name):
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        
+        r2 = r2_score(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = mean_absolute_percentage_error(y_test, y_pred)
+        explained_var = explained_variance_score(y_test, y_pred)
+        
+        mlflow.log_param("model_type", model_name)
+        if params:
+            for key, value in params.items():
+                mlflow.log_param(key, value)
+        
+        mlflow.log_metric("r2_score", r2)
+        mlflow.log_metric("rmse", rmse)
+        mlflow.log_metric("mae", mae)
+        mlflow.log_metric("mape", mape)
+        mlflow.log_metric("explained_variance", explained_var)
+        
+        if model_name.startswith("XGBoost"):
+            mlflow.xgboost.log_model(model, model_name)
+        else:
+            mlflow.sklearn.log_model(model, model_name)
+        
+        plt.figure(figsize=(8, 6))
+        sns.scatterplot(x=y_test, y=y_pred)
+        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
+        plt.xlabel('Actual')
+        plt.ylabel('Predicted')
+        plt.title(f'Predicted vs Actual ({model_name})')
+        plt.savefig(f"{model_name}_prediksi.png")
+        mlflow.log_artifact(f"{model_name}_prediksi.png")
+        plt.close()
+        
+        print(f"{model_name} - R²: {r2:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, Explained Variance: {explained_var:.4f}")
+
+def main():
+    os.environ['MLFLOW_TRACKING_URI'] = 'https://dagshub.com/ShendiTeukuMaulanaEfendi/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow'
+    os.environ['MLFLOW_TRACKING_USERNAME'] = 'ShendiTeukuMaulanaEfendi'
+    os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN')
+    mlflow.set_experiment("Student_Performance_Prediction")
+    
+    df = pd.read_csv('student_habits_preprocessing.csv')
+    
+    X = df.drop('exam_score', axis=1)
+    y = df['exam_score']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    lr_model = LinearRegression()
+    train_and_log_model(lr_model, "Linear Regression", X_train, X_test, y_train, y_test)
+    
+    rf_param_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [5, 10, None]
+    }
+    rf_model = RandomForestRegressor(random_state=42)
+    rf_grid = GridSearchCV(rf_model, rf_param_grid, cv=5, scoring='r2')
+    rf_grid.fit(X_train, y_train)
+    train_and_log_model(rf_grid.best_estimator_, "Random Forest Tuned", X_train, X_test, y_train, y_test, rf_grid.best_params_)
+    
+    xgb_param_grid = {
+        'n_estimators': [50, 100, 200],
+        'learning_rate': [0.01, 0.1, 0.3]
+    }
+    xgb_model = XGBRegressor(random_state=42)
+    xgb_grid = GridSearchCV(xgb_model, xgb_param_grid, cv=5, scoring='r2')
+    xgb_grid.fit(X_train, y_train)
+    train_and_log_model(xgb_grid.best_estimator_, "XGBoost Tuned", X_train, X_test, y_train, y_test, xgb_grid.best_params_)
+
+if __name__ == "__main__":
+    main()
