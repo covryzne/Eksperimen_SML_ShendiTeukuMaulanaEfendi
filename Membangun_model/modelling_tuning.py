@@ -3,15 +3,15 @@ import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, median_absolute_error
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, median_absolute_error, max_error, explained_variance_score
 from xgboost import XGBRegressor
 import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import explained_variance_score
 import os
+import time
 
 def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / (y_true + 1e-10))) * 100
@@ -21,6 +21,8 @@ def max_absolute_error(y_true, y_pred):
 
 def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, feature_names, params=None):
     with mlflow.start_run(run_name=model_name):
+        start = time.time()
+        end = time.time()
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         
@@ -31,6 +33,9 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
         explained_var = explained_variance_score(y_test, y_pred)
         medae = median_absolute_error(y_test, y_pred)
         maxae = max_absolute_error(y_test, y_pred)
+        max_err = max_error(y_test, y_pred)
+        training_time = end - start
+        
         
         mlflow.log_param("model_type", model_name)
         if params:
@@ -44,6 +49,8 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
         mlflow.log_metric("explained_variance", explained_var)
         mlflow.log_metric("median_absolute_error", medae)
         mlflow.log_metric("max_absolute_error", maxae)
+        mlflow.log_metric("Max_Error", max_err)
+        mlflow.log_metric("Training_Time", training_time)
         
         # Prepare input example for model signature
         input_example = X_train[:5]
