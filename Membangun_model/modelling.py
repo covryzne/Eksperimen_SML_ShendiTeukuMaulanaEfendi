@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import explained_variance_score
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / (y_true + 1e-10))) * 100
@@ -64,11 +66,11 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test):
 
 def main():
     # Untuk test lokal, uncomment baris ini dan comment DagsHub
-    mlflow.set_tracking_uri("http://localhost:5000")
+    # mlflow.set_tracking_uri("http://localhost:5000")
     # Untuk DagsHub, uncomment baris ini dan comment lokal
-    # os.environ['MLFLOW_TRACKING_URI'] = 'https://dagshub.com/ShendiTeukuMaulanaEfendi/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow'
-    # os.environ['MLFLOW_TRACKING_USERNAME'] = 'ShendiTeukuMaulanaEfendi'
-    # os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN')
+    os.environ['MLFLOW_TRACKING_URI'] = 'https://dagshub.com/covryzne/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow'
+    os.environ['MLFLOW_TRACKING_USERNAME'] = 'covryzne'
+    os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN')
     
     mlflow.set_experiment("Student_Performance_Prediction")
     df = pd.read_csv('Membangun_model/student_habits_preprocessing.csv')
