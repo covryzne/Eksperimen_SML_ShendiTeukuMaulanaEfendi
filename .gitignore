@@ -1,6 +1,1 @@
-# Abaikan semua file dan folder
-*
-
-# Tapi jangan abaikan file/folder ini:
-!.gitignore
-!env
+env/
