@@ -43,25 +43,33 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, par
         else:
             mlflow.sklearn.log_model(model, model_name)
         
+        plot_dir = "Membangun_model/Actual VS Predicted Graph"
+        os.makedirs(plot_dir, exist_ok=True)
+        plot_path = os.path.join(plot_dir, f"{model_name}_prediksi.png")
+        
         plt.figure(figsize=(8, 6))
         sns.scatterplot(x=y_test, y=y_pred)
         plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
         plt.xlabel('Actual')
         plt.ylabel('Predicted')
         plt.title(f'Predicted vs Actual ({model_name})')
-        plt.savefig(f"{model_name}_prediksi.png")
-        mlflow.log_artifact(f"{model_name}_prediksi.png")
+        plt.savefig(plot_path)
+        mlflow.log_artifact(plot_path)
         plt.close()
         
         print(f"{model_name} - R²: {r2:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, Explained Variance: {explained_var:.4f}")
 
 def main():
-    os.environ['MLFLOW_TRACKING_URI'] = 'https://dagshub.com/ShendiTeukuMaulanaEfendi/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow'
-    os.environ['MLFLOW_TRACKING_USERNAME'] = 'ShendiTeukuMaulanaEfendi'
-    os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN')
+    # Untuk test lokal, uncomment baris ini dan comment DagsHub
+    mlflow.set_tracking_uri("http://localhost:5000")
+    # Untuk DagsHub, uncomment baris ini dan comment lokal
+    # os.environ['MLFLOW_TRACKING_URI'] = 'https://dagshub.com/ShendiTeukuMaulanaEfendi/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow'
+    # os.environ['MLFLOW_TRACKING_USERNAME'] = 'ShendiTeukuMaulanaEfendi'
+    # os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN')
+    
     mlflow.set_experiment("Student_Performance_Prediction")
     
-    df = pd.read_csv('student_habits_preprocessing.csv')
+    df = pd.read_csv('Membangun_model/student_habits_preprocessing.csv')
     
     X = df.drop('exam_score', axis=1)
     y = df['exam_score']

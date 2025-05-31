@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/539343053922273955/3373c982f07d44aaba2535f6790dd3e8/artifacts
+end_time: 1748695720215
+entry_point_name: ''
+experiment_id: '539343053922273955'
+lifecycle_stage: active
+run_id: 3373c982f07d44aaba2535f6790dd3e8
+run_name: XGBoost Tuned
+run_uuid: 3373c982f07d44aaba2535f6790dd3e8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748695715932
+status: 3
+tags: []
+user_id: underattedcov

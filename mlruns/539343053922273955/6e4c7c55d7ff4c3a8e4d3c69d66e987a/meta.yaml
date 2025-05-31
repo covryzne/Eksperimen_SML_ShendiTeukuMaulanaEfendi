@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/539343053922273955/6e4c7c55d7ff4c3a8e4d3c69d66e987a/artifacts
+end_time: 1748695711811
+entry_point_name: ''
+experiment_id: '539343053922273955'
+lifecycle_stage: active
+run_id: 6e4c7c55d7ff4c3a8e4d3c69d66e987a
+run_name: Random Forest Tuned
+run_uuid: 6e4c7c55d7ff4c3a8e4d3c69d66e987a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748695706796
+status: 3
+tags: []
+user_id: underattedcov

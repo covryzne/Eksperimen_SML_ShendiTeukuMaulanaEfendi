@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/539343053922273955/f2bf2185d49c4315b2b031ed83fdf417/artifacts
+end_time: 1748695691248
+entry_point_name: ''
+experiment_id: '539343053922273955'
+lifecycle_stage: active
+run_id: f2bf2185d49c4315b2b031ed83fdf417
+run_name: Linear Regression
+run_uuid: f2bf2185d49c4315b2b031ed83fdf417
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748695686304
+status: 3
+tags: []
+user_id: underattedcov
