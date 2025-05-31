@@ -1,0 +1,33 @@
+name: Train Models
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r Membangun_model/requirements.txt || true
+          pip install pandas==2.2.3 scikit-learn==1.5.2 xgboost==2.1.1 mlflow==2.19.0 matplotlib seaborn
+      - name: Run training with tuning
+        run: python Membangun_model/modelling_tuning.py
+        env:
+          MLFLOW_TRACKING_URI: https://dagshub.com/ShendiTeukuMaulanaEfendi/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow
+          MLFLOW_TRACKING_USERNAME: ShendiTeukuMaulanaEfendi
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+      - name: Commit artifacts
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add Membangun_model/*.png
+          git add Membangun_model/*.jpg
+          git commit -m "Add MLflow artifacts via GitHub Actions" || echo "No changes to commit"
+          git push https://x:${{ secrets.GH_TOKEN }}@github.com/covryzne/Eksperimen_SML_ShendiTeukuMaulanaEfendi.git
