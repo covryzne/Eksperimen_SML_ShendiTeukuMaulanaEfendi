@@ -1,0 +1,36 @@
+name: Run Automate Preprocessing
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.7'
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install pandas==2.2.3 scikit-learn==1.5.2
+      - name: Run Automate Preprocessing
+        run: python preprocessing/automate_ShendiTeukuMaulanaEfendi.py
+      - name: Commit Preprocessed Dataset
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add preprocessing/student_habits_preprocessing.csv
+          git commit -m "Add preprocessed dataset via GitHub Actions" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Preprocessed Dataset
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessed-dataset
+          path: preprocessing/student_habits_preprocessing.csv
