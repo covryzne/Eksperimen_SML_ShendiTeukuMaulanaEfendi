@@ -60,7 +60,7 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
         if model_name in ["Random Forest Tuned", "XGBoost Tuned"]:
             plt.figure(figsize=(10, 6))
             importances = model.feature_importances_
-            indices = np.argsort(importances)
+            indices = np.argsort(importances)[::-1]
             sns.barplot(x=importances[indices], y=np.array(feature_names)[indices])
             plt.title(f'Feature Importance ({model_name})')
             plt.tight_layout()
@@ -78,22 +78,22 @@ def main():
     token = os.getenv('DAGSHUB_TOKEN')
     
     if not token:
-        raise ValueError("DAGSHUB_TOKEN environment variable is not set")
+        raise ValueError("DAGSHUB_TOKEN environment variable is not set. Please set it in GitHub Secrets or environment.")
     
-    os.environ['MLFLOW_TRACKING_URI'] = username
+    os.environ['MLFLOW_TRACKING_URI'] = tracking_uri
     os.environ['MLFLOW_TRACKING_USERNAME'] = username
     os.environ['MLFLOW_TRACKING_PASSWORD'] = token
     
     mlflow.set_tracking_uri(tracking_uri)
     
     # For local testing, uncomment below and comment DagsHub settings
-    # mlflow.set_tracking_uri("http://localhost:8000")
+    # mlflow.set_tracking_uri("http://localhost:5000")
     
     mlflow.set_experiment("Student_Performance_Prediction")
     
-    df = pd.read_csv('Membangun_model/student_habits_preprocessed.csv')
+    df = pd.read_csv('Membangun_model/student_habits_preprocessing.csv')
     
-    X = df.drop(columns=['exam_score'])
+    X = df.drop('exam_score', axis=1)
     y = df['exam_score']
     feature_names = X.columns.tolist()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -117,4 +117,7 @@ def main():
     xgb_model = XGBRegressor(random_state=42)
     xgb_grid = GridSearchCV(xgb_model, xgb_param_grid, cv=5, scoring='r2')
     xgb_grid.fit(X_train, y_train)
-    train_and_log_model(xgb_grid.best_estimator_, "XGBoost Tuned", X_train, X_test, y_train, y_test, feature_names, xgb_grid.best_params_ params_)
+    train_and_log_model(xgb_grid.best_estimator_, "XGBoost Tuned", X_train, X_test, y_train, y_test, feature_names, xgb_grid.best_params_)
+
+if __name__ == "__main__":
+    main()
