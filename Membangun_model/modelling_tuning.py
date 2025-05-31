@@ -105,7 +105,7 @@ def main():
     train_and_log_model(lr_model, "Linear Regression", X_train, X_test, y_train, y_test, feature_names)
     
     rf_param_grid = {
-        'n_estimators': [50, 100, 200],
+        'n_estimators': [50, 150, 200],
         'max_depth': [5, 10, None]
     }
     rf_model = RandomForestRegressor(random_state=42)
@@ -114,7 +114,7 @@ def main():
     train_and_log_model(rf_grid.best_estimator_, "Random Forest Tuned", X_train, X_test, y_train, y_test, feature_names, rf_grid.best_params_)
     
     xgb_param_grid = {
-        'n_estimators': [50, 100, 200],
+        'n_estimators': [50, 150, 200],
         'learning_rate': [0.01, 0.1, 0.3]
     }
     xgb_model = XGBRegressor(random_state=42)
