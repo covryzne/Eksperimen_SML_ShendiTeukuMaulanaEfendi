@@ -12,11 +12,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import explained_variance_score
 import os
+import dagshub
 
 def mean_absolute_percentage_error(y_true, y_pred):
     return np.mean(np.abs((y_true - y_pred) / (y_true + 1e-10))) * 100
 
-def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, params=None):
+def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, feature_names, params=None):
     with mlflow.start_run(run_name=model_name):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
@@ -57,15 +58,30 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, par
         mlflow.log_artifact(plot_path)
         plt.close()
         
+        if model_name in ["Random Forest Tuned", "XGBoost Tuned"]:
+            plt.figure(figsize=(10, 6))
+            importances = model.feature_importances_
+            indices = np.argsort(importances)[::-1]
+            sns.barplot(x=importances[indices], y=np.array(feature_names)[indices])
+            plt.title(f'Feature Importance ({model_name})')
+            plt.tight_layout()
+            feat_imp_path = os.path.join(plot_dir, f"{model_name}_feature_importance.png")
+            plt.savefig(feat_imp_path)
+            mlflow.log_artifact(feat_imp_path)
+            plt.close()
+        
         print(f"{model_name} - R²: {r2:.4f}, RMSE: {rmse:.4f}, MAE: {mae:.4f}, MAPE: {mape:.4f}, Explained Variance: {explained_var:.4f}")
 
 def main():
+    # Inisialisasi DagsHub
+    dagshub.init(repo_owner='covryzne', repo_name='Eksperimen_SML_ShendiTeukuMaulanaEfendi', mlflow=True)
+    
     # Untuk test lokal, uncomment baris ini dan comment DagsHub
     # mlflow.set_tracking_uri("http://localhost:5000")
     # Untuk DagsHub, uncomment baris ini dan comment lokal
     os.environ['MLFLOW_TRACKING_URI'] = 'https://dagshub.com/covryzne/Eksperimen_SML_ShendiTeukuMaulanaEfendi.mlflow'
     os.environ['MLFLOW_TRACKING_USERNAME'] = 'covryzne'
-    os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN')
+    os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('DAGSHUB_TOKEN') or ''
     
     mlflow.set_experiment("Student_Performance_Prediction")
     
@@ -73,10 +89,11 @@ def main():
     
     X = df.drop('exam_score', axis=1)
     y = df['exam_score']
+    feature_names = X.columns.tolist()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     lr_model = LinearRegression()
-    train_and_log_model(lr_model, "Linear Regression", X_train, X_test, y_train, y_test)
+    train_and_log_model(lr_model, "Linear Regression", X_train, X_test, y_train, y_test, feature_names)
     
     rf_param_grid = {
         'n_estimators': [50, 100, 200],
@@ -85,7 +102,7 @@ def main():
     rf_model = RandomForestRegressor(random_state=42)
     rf_grid = GridSearchCV(rf_model, rf_param_grid, cv=5, scoring='r2')
     rf_grid.fit(X_train, y_train)
-    train_and_log_model(rf_grid.best_estimator_, "Random Forest Tuned", X_train, X_test, y_train, y_test, rf_grid.best_params_)
+    train_and_log_model(rf_grid.best_estimator_, "Random Forest Tuned", X_train, X_test, y_train, y_test, feature_names, rf_grid.best_params_)
     
     xgb_param_grid = {
         'n_estimators': [50, 100, 200],
@@ -94,7 +111,7 @@ def main():
     xgb_model = XGBRegressor(random_state=42)
     xgb_grid = GridSearchCV(xgb_model, xgb_param_grid, cv=5, scoring='r2')
     xgb_grid.fit(X_train, y_train)
-    train_and_log_model(xgb_grid.best_estimator_, "XGBoost Tuned", X_train, X_test, y_train, y_test, xgb_grid.best_params_)
+    train_and_log_model(xgb_grid.best_estimator_, "XGBoost Tuned", X_train, X_test, y_train, y_test, feature_names, xgb_grid.best_params_)
 
 if __name__ == "__main__":
     main()
