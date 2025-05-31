@@ -38,10 +38,13 @@ def train_and_log_model(model, model_name, X_train, X_test, y_train, y_test, fea
         mlflow.log_metric("mape", mape)
         mlflow.log_metric("explained_variance", explained_var)
         
+        # Prepare input example for model signature
+        input_example = X_test[:5]  # Use 5 samples from test set
+        
         if model_name.startswith("XGBoost"):
-            mlflow.xgboost.log_model(model, model_name)
+            mlflow.xgboost.log_model(model, model_name, input_example=input_example)
         else:
-            mlflow.sklearn.log_model(model, model_name)
+            mlflow.sklearn.log_model(model, model_name, input_example=input_example)
         
         plot_dir = "Membangun_model/Actual VS Predicted Graph"
         os.makedirs(plot_dir, exist_ok=True)

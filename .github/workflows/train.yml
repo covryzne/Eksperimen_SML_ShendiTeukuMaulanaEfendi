@@ -6,7 +6,7 @@ on:
 jobs:
   train:
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # Tambah timeout
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -29,7 +29,7 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add Membangun_model/Actual\ VS\ Predicted\ Graph/*.png
-          git add Membangun_model/*.jpg
+          git add Membangun_model/Actual\ VS\ Predicted\ Graph/*.png || true
+          git add Membangun_model/*.jpg || true
           git commit -m "Add MLflow artifacts via GitHub Actions" || echo "No changes to commit"
           git push https://x:${{ secrets.GH_TOKEN }}@github.com/covryzne/Eksperimen_SML_ShendiTeukuMaulanaEfendi.git
