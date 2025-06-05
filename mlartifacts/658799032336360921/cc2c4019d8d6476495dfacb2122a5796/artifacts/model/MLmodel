@@ -1,0 +1,36 @@
+artifact_path: model
+flavors:
+  python_function:
+    data: model.xgb
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.12.7
+  xgboost:
+    code: null
+    data: model.xgb
+    model_class: xgboost.sklearn.XGBRegressor
+    model_format: xgb
+    xgb_version: 2.1.1
+mlflow_version: 2.19.0
+model_size_bytes: 375447
+model_uuid: 765925de2a4c41649b93fbb6b2d67efd
+run_id: cc2c4019d8d6476495dfacb2122a5796
+signature:
+  inputs: '[{"type": "double", "name": "age", "required": true}, {"type": "long",
+    "name": "gender", "required": true}, {"type": "double", "name": "study_hours_per_day",
+    "required": true}, {"type": "double", "name": "social_media_hours", "required":
+    true}, {"type": "double", "name": "netflix_hours", "required": true}, {"type":
+    "long", "name": "part_time_job", "required": true}, {"type": "double", "name":
+    "attendance_percentage", "required": true}, {"type": "double", "name": "sleep_hours",
+    "required": true}, {"type": "long", "name": "diet_quality", "required": true},
+    {"type": "double", "name": "exercise_frequency", "required": true}, {"type": "long",
+    "name": "parental_education_level", "required": true}, {"type": "long", "name":
+    "internet_quality", "required": true}, {"type": "double", "name": "mental_health_rating",
+    "required": true}, {"type": "long", "name": "extracurricular_participation", "required":
+    true}, {"type": "double", "name": "productivity_ratio", "required": true}, {"type":
+    "long", "name": "sleep_category", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1]}}]'
+  params: null
+utc_time_created: '2025-06-05 12:00:04.812928'
